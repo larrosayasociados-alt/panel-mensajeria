@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Mensajería — L&amp;A Seguros</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page-plane:      #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --border:         rgba(11,11,11,0.10);
+    --card-bg:        #ffffff;
+
+    --good:     #0ca30c;
+    --warning:  #fab219;
+    --serious:  #ec835a;
+    --critical: #d03b3b;
+
+    --ch-email:      #2a78d6;
+    --ch-whatsapp:   #1baf7a;
+    --ch-instagram:  #e87ba4;
+    --ch-messenger:  #4a3aa7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page-plane:      #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --border:         rgba(255,255,255,0.10);
+      --card-bg:        #232322;
+
+      --ch-email:      #3987e5;
+      --ch-whatsapp:   #199e70;
+      --ch-instagram:  #d55181;
+      --ch-messenger:  #9085e9;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page-plane:      #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --border:         rgba(255,255,255,0.10);
+    --card-bg:        #232322;
+
+    --ch-email:      #3987e5;
+    --ch-whatsapp:   #199e70;
+    --ch-instagram:  #d55181;
+    --ch-messenger:  #9085e9;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page-plane);
+    color: var(--text-primary);
+  }
+  .viz-root { padding: 28px 20px 60px; max-width: 980px; margin: 0 auto; }
+
+  header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  header.top h1 { font-size: 21px; margin: 0 0 4px; }
+  header.top .sub { color: var(--text-secondary); font-size: 13px; }
+  .refresh-pill {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 999px;
+    padding: 7px 14px; font-size: 12.5px; color: var(--text-secondary); white-space: nowrap;
+  }
+  .refresh-pill b { color: var(--text-primary); }
+  .theme-btn {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 10px; font-size: 12px; color: var(--text-secondary); cursor: pointer; margin-left:8px;
+  }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+  .stat-tile {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+  }
+  .stat-tile .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .stat-tile .value { font-size: 26px; font-weight: 600; line-height: 1; }
+  .stat-tile .value.small { font-size: 18px; }
+  .stat-tile .note { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+  h2.section-title { font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary); margin: 30px 0 12px; }
+
+  .msg-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start;
+  }
+  .msg-card .chan-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .msg-card .body { flex: 1; min-width: 0; }
+  .msg-card .row1 { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .msg-card .sender { font-weight: 600; font-size: 14px; }
+  .msg-card .time { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .msg-card .subject { font-size: 13.5px; color: var(--text-primary); margin-top: 2px; }
+  .msg-card .snippet { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
+  .msg-card .meta { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .badge.channel { background: color-mix(in srgb, currentColor 14%, transparent); }
+  .badge.action { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+  .badge.account { background: color-mix(in srgb, var(--text-muted) 16%, transparent); color: var(--text-secondary); }
+
+  .admin-list .msg-card { opacity: 0.92; }
+
+  .channels-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .channel-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 13px 15px;
+  }
+  .channel-card .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .channel-card .name { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .status-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px; }
+  .status-tag.good { color: var(--good); background: color-mix(in srgb, var(--good) 15%, transparent); }
+  .status-tag.warning { color: #8a5c00; background: color-mix(in srgb, var(--warning) 25%, transparent); }
+  :root[data-theme="dark"] .status-tag.warning { color: #f0c05a; }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .status-tag.warning { color: #f0c05a; }
+  }
+  .channel-card .detail { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  .channel-card .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; }
+
+  details.noise { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 15px; margin-top: 6px; }
+  details.noise summary { cursor: pointer; font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+  details.noise .noise-item { font-size: 12.5px; color: var(--text-muted); padding: 5px 0; border-top: 1px solid var(--gridline); }
+  details.noise .noise-item:first-of-type { border-top: none; margin-top: 8px; }
+
+  .callout {
+    border: 1px solid var(--border); border-radius: 12px; padding: 13px 15px; margin-top: 10px;
+    background: color-mix(in srgb, var(--warning) 8%, var(--card-bg)); font-size: 12.5px; color: var(--text-secondary);
+  }
+  .callout b { color: var(--text-primary); }
+
+  footer { margin-top: 34px; font-size: 11.5px; color: var(--text-muted); border-top: 1px solid var(--gridline); padding-top: 14px; }
+
+  @media (max-width: 640px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .channels-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="viz-root" id="root">
+
+  <header class="top">
+    <div>
+      <h1>Panel de Mensajería — L&amp;A Seguros</h1>
+      <div class="sub">Resumen de mensajes importantes de todos tus canales conectados</div>
+    </div>
+    <div style="display:flex; align-items:center;">
+      <span class="refresh-pill">Actualizado: <b id="updated-at">14 ago 2026, 00:34</b> · próxima: <b>~01:34</b></span>
+      <button class="theme-btn" onclick="toggleTheme()">Tema</button>
+    </div>
+  </header>
+
+  <div class="kpi-row">
+    <div class="stat-tile">
+      <div class="label">Mensajes revisados (48h)</div>
+      <div class="value">15</div>
+      <div class="note">3 cuentas de correo</div>
+    </div>
+    <div class="stat-tile">
+      <div class="label">Importantes ahora</div>
+      <div class="value" style="color:var(--critical)">2</div>
+      <div class="note">Leads de clientes pidiendo cotización</div>
+    </div>
+    <div class="stat-tile">
+      <div class="label">Ruido filtrado</div>
+      <div class="value small">7 avisos</div>
+      <div class="note">Alertas de seguridad / login</div>
+    </div>
+    <div class="stat-tile">
+      <div class="label">Canales conectados</div>
+      <div class="value small">1 de 4</div>
+      <div class="note">Solo correo por ahora</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Importante ahora</h2>
+
+  <div class="msg-card">
+    <span class="chan-dot" style="background:var(--ch-email)"></span>
+    <div class="body">
+      <div class="row1">
+        <span class="sender">inversionesmedular@outlook.es</span>
+        <span class="time">13 ago, 21:24</span>
+      </div>
+      <div class="subject">Extraer datos para cotizar</div>
+      <div class="snippet">"Saludos y muchas gracias" — cliente solicita que se extraigan datos para preparar una cotización.</div>
+      <div class="meta">
+        <span class="badge channel" style="color:var(--ch-email)">Email</span>
+        <span class="badge account">larrosayasociados@gmail.com</span>
+        <span class="badge action">Acción: preparar cotización</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg-card">
+    <span class="chan-dot" style="background:var(--ch-email)"></span>
+    <div class="body">
+      <div class="row1">
+        <span class="sender">inversionesmedular@outlook.es</span>
+        <span class="time">13 ago, 15:21</span>
+      </div>
+      <div class="subject">Cotizar avant</div>
+      <div class="snippet">"Saludos y muchas gracias" — mismo cliente, solicita cotización de un Avant.</div>
+      <div class="meta">
+        <span class="badge channel" style="color:var(--ch-email)">Email</span>
+        <span class="badge account">larrosayasociados@gmail.com</span>
+        <span class="badge action">Acción: responder con cotización</span>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Seguimiento / administrativo</h2>
+
+  <div class="admin-list">
+    <div class="msg-card">
+      <span class="chan-dot" style="background:var(--ch-email)"></span>
+      <div class="body">
+        <div class="row1">
+          <span class="sender">almorei@mediador.mapfre.com</span>
+          <span class="time">13 ago, 22:12</span>
+        </div>
+        <div class="subject">RE: Comunicación de la Red Tributaria de Lanzarote</div>
+        <div class="snippet">Hilo interno con tu compañero de Mapfre reenviando un aviso tributario — no es una gestión de cliente.</div>
+        <div class="meta">
+          <span class="badge channel" style="color:var(--ch-email)">Email</span>
+          <span class="badge account">larrosayasociados@gmail.com</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg-card">
+      <span class="chan-dot" style="background:var(--ch-email)"></span>
+      <div class="body">
+        <div class="row1">
+          <span class="sender">informacion@redtributarialanzarote.es</span>
+          <span class="time">13 ago, 05:33</span>
+        </div>
+        <div class="subject">Apertura de plazo voluntario de pago de impuestos</div>
+        <div class="snippet">Aviso tributario administrativo — trámite personal, sin relación con clientes ni pólizas.</div>
+        <div class="meta">
+          <span class="badge channel" style="color:var(--ch-email)">Email</span>
+          <span class="badge account">larrosayasociados@gmail.com</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg-card">
+      <span class="chan-dot" style="background:var(--ch-email)"></span>
+      <div class="body">
+        <div class="row1">
+          <span class="sender">Alertas de Google</span>
+          <span class="time">13 ago, 16:05</span>
+        </div>
+        <div class="subject">Alerta de Google — nueva apertura en Lanzarote</div>
+        <div class="snippet">Inteligencia de mercado: posible negocio nuevo abriendo en la zona. Sin urgencia, útil para contexto competitivo.</div>
+        <div class="meta">
+          <span class="badge channel" style="color:var(--ch-email)">Email</span>
+          <span class="badge account">novedadesusauy@gmail.com</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <details class="noise">
+    <summary>Ruido filtrado — 7 avisos de seguridad / login (sin acción necesaria)</summary>
+    <div class="noise-item">Alertas de inicio de sesión de Google (Zapier, Grok) — 4 avisos, cuenta larrosayasociados@gmail.com</div>
+    <div class="noise-item">Alerta de nuevo login en SpaceXAI — 1 aviso, cuenta larrosayasociados@gmail.com</div>
+    <div class="noise-item">Alertas de seguridad de Google — 2 avisos, cuenta novedadesusauy@gmail.com</div>
+  </details>
+
+  <h2 class="section-title">Estado de canales</h2>
+
+  <div class="channels-grid">
+    <div class="channel-card">
+      <div class="head">
+        <span class="name"><span class="chan-dot" style="background:var(--ch-email); display:inline-block;"></span>Email</span>
+        <span class="status-tag good">● Conectado</span>
+      </div>
+      <div class="detail">3 cuentas: larrosayasociados@gmail.com, movilmedular2@gmail.com, novedadesusauy@gmail.com</div>
+    </div>
+
+    <div class="channel-card">
+      <div class="head">
+        <span class="name"><span class="chan-dot" style="background:var(--ch-whatsapp); display:inline-block;"></span>WhatsApp</span>
+        <span class="status-tag warning">● Pendiente</span>
+      </div>
+      <div class="detail">Sin conectar todavía.</div>
+      <div class="hint">Detecté un conector "LetsBot" ya instalado en tu cuenta (gestión de conversaciones) — si es tu WhatsApp, puedo habilitarlo. Alternativa: WhatsApp Business vía Zapier.</div>
+    </div>
+
+    <div class="channel-card">
+      <div class="head">
+        <span class="name"><span class="chan-dot" style="background:var(--ch-instagram); display:inline-block;"></span>Instagram (DM)</span>
+        <span class="status-tag warning">● Pendiente</span>
+      </div>
+      <div class="detail">Sin conectar todavía.</div>
+      <div class="hint">Disponible vía Zapier (Instagram for Business) — requiere cuenta profesional vinculada a una página de Facebook.</div>
+    </div>
+
+    <div class="channel-card">
+      <div class="head">
+        <span class="name"><span class="chan-dot" style="background:var(--ch-messenger); display:inline-block;"></span>Messenger</span>
+        <span class="status-tag warning">● Pendiente</span>
+      </div>
+      <div class="detail">Sin conectar todavía.</div>
+      <div class="hint">Se conecta junto con Instagram vía Meta Business (misma verificación).</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <b>Nota sobre WhatsApp/Instagram/Messenger:</b> estas plataformas son de Meta y solo permiten acceso automatizado a través de "WhatsApp Business API" / "Meta Business API", que exige negocio verificado y revisión de la app. No es posible leer un WhatsApp personal por API. Dime si quieres que avancemos con la conexión (Zapier o LetsBot) y te guío paso a paso.
+  </div>
+
+  <footer>
+    Panel generado a partir de tus servicios conectados (Gmail nativo + 3 cuentas Gmail vía Zapier). Se actualiza automáticamente cada hora mediante una tarea programada. Datos de las últimas ~48h en el momento de la actualización.
+  </footer>
+
+</div>
+<script>
+  function toggleTheme() {
+    const el = document.documentElement;
+    const current = el.getAttribute('data-theme');
+    if (current === 'dark') { el.setAttribute('data-theme','light'); }
+    else if (current === 'light') { el.removeAttribute('data-theme'); }
+    else { el.setAttribute('data-theme','dark'); }
+  }
+</script>
+</body>
+</html>
